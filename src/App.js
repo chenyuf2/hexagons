@@ -8,7 +8,6 @@ function App() {
   return (
     <Canvas camera={{ position: [0, 0, 70], fov: 45 }}>
       <Scene ref={sceneRef} />
-      {/* <OrbitControls /> */}
     </Canvas>
   );
 }
