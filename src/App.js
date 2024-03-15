@@ -2,7 +2,6 @@ import "./App.scss";
 import { useRef } from "react";
 import Scene from "components/Scene/Scene";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
 function App() {
   const sceneRef = useRef(null);
   return (
