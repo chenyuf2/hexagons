@@ -5,8 +5,8 @@ import { useCallback, useRef } from "react";
 import { Vector3 } from "three";
 import { forwardRef, useEffect } from "react";
 export const GAP = 0.2;
-const NUM_ROW = 12;
-const NUM_COL = 15;
+const NUM_ROW = 4;
+const NUM_COL = 50;
 const RADIUS = 8;
 const Scene = forwardRef((_, ref) => {
   const isOver = useRef(false);
@@ -63,6 +63,10 @@ const Scene = forwardRef((_, ref) => {
     []
   );
 
+  const getScale = useCallback((distance) => {
+    return distance < RADIUS ? 1 + 0.4 * Math.cos((distance * (Math.PI / 2)) / RADIUS) ** 10 : 1;
+  }, []);
+
   const getAnimatedScale = useCallback(
     (x, y) => {
       const scales = new Array(NUM_COL * NUM_ROW).fill(1);
@@ -78,13 +82,13 @@ const Scene = forwardRef((_, ref) => {
               (defaultPos[1] - defaultPositions[3 * (x * NUM_COL + y) + 1]) ** 2
           );
           if (distance < RADIUS) {
-            scales[i * NUM_COL + j] = 1 + 0.4 * Math.cos((distance * (Math.PI / 2)) / RADIUS) ** 12;
+            scales[i * NUM_COL + j] = getScale(distance);
           }
         }
       }
       return scales;
     },
-    [defaultPositions]
+    [defaultPositions, getScale]
   );
 
   const getAnimatedPosition = useCallback(
@@ -109,10 +113,9 @@ const Scene = forwardRef((_, ref) => {
           defaultPos[1] - defaultPositions[3 * (x * NUM_COL + y) + 1],
           0
         ).normalize();
-        const scaleValue =
-          distance < RADIUS ? 1 + 0.4 * Math.cos((distance * (Math.PI / 2)) / RADIUS) ** 12 : 1;
+        const scaleValue = getScale(distance);
 
-        const targetScale = shift + (scaleValue * Math.sqrt(3)) / 2 + count * GAP;
+        const targetScale = shift + (scaleValue * Math.sqrt(3)) / 2;
         const resultScale =
           count === 0
             ? 0
@@ -140,7 +143,9 @@ const Scene = forwardRef((_, ref) => {
           queue.push([
             newI,
             newJ,
-            shift + (i === x && j === y ? Math.sqrt(3) / 2 : Math.sqrt(3)) * scaleValue,
+            shift +
+              (i === x && j === y ? Math.sqrt(3) / 2 : Math.sqrt(3)) * scaleValue +
+              GAP * scaleValue * 1.2,
             count + 1,
           ]);
         }
@@ -148,14 +153,14 @@ const Scene = forwardRef((_, ref) => {
       // console.log(visit);
       return positions;
     },
-    [defaultPositions]
+    [defaultPositions, getScale]
   );
 
   const handlePointerEnter = useCallback(
     (e) => {
       const x = (((e.offsetX / width) * 2 - 1) * canvasWidth) / 2;
       const y = (((e.offsetY / height) * -2 + 1) * canvasHeight) / 2;
-      if (Math.abs(x) >= 15 || Math.abs(y) >= 15) {
+      if (Math.abs(x) >= 35 || Math.abs(y) >= 9) {
         isOver.current = false;
         api.start({
           scale: defaultScales,
